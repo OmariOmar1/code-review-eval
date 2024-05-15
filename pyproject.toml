@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "code-review-eval"
+version = "0.1.0"
+description = "Compare two candidate solutions per coding task and produce preference data."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[project.scripts]
+code-review-eval = "code_review_eval.cli:main"
+
+[tool.setuptools]
+packages = ["code_review_eval"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["docker: needs a running Docker daemon"]
