@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Compare two candidate solutions per coding task and produce preference data."
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = ["anthropic>=0.39"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8"]

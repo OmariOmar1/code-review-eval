@@ -27,8 +27,8 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements.txt
-      - name: Run the full pipeline in Docker
-        run: python -m code_review_eval all --backend docker
+      - name: Run the full pipeline in Docker with the mock judge
+        run: python -m code_review_eval all --backend docker --judge mock
       - uses: actions/upload-artifact@v4
         with:
           name: pipeline-output

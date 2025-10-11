@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 from .analysis import write_report
-from .judge import HeuristicJudge, JudgeError
+from .judge import JudgeError, get_judge
 from .pipeline import run_judge, run_tests
 from .runner import DEFAULT_TIMEOUT, RunnerError
 
@@ -34,6 +34,8 @@ def build_parser():
             sub.add_argument("--backend", choices=("docker", "local"), default="docker")
             sub.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT)
             sub.add_argument("--rebuild", action="store_true", help="rebuild the runner image")
+        if name in ("judge", "all"):
+            sub.add_argument("--judge", choices=("auto", "mock", "llm"), default="auto")
     return parser
 
 
@@ -47,7 +49,7 @@ def main(argv=None):
             passing = sum(1 for result in results if result["passed"])
             print(f"ran {len(results)} candidates ({passing} fully passing) -> {args.results}")
         if args.command in ("judge", "all"):
-            judge = HeuristicJudge()
+            judge = get_judge(args.judge)
             rows = run_judge(args.tasks, args.preferences, judge)
             print(f"judged {len(rows)} tasks with the {judge.name} judge -> {args.preferences}")
         if args.command in ("analyze", "all"):

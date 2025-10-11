@@ -1,10 +1,13 @@
-"""Score two candidates against the rubric and pick a winner.
+"""Judges that score two candidates against the rubric and pick a winner.
 
-``HeuristicJudge`` works from static analysis of the source only. It is never
-shown the test results.
+``LLMJudge`` asks a language model. ``MockJudge`` is a deterministic set of
+static-analysis heuristics so the whole pipeline can run offline. Neither
+judge is shown the test results.
 """
 
 import ast
+import json
+import os
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -12,9 +15,12 @@ from pathlib import Path
 from .tasks import CANDIDATES
 
 CRITERIA = ("correctness", "readability", "edge_case_handling", "test_quality")
+API_KEY_ENV = "ANTHROPIC_API_KEY"
+MODEL_ENV = "JUDGE_MODEL"
+MAX_TOKENS = 8192
 RUBRIC_PATH = Path(__file__).resolve().parent.parent / "RUBRIC.md"
 
-# Correctness counts double when the judge totals its scores.
+# Correctness counts double when the mock judge totals its scores.
 WEIGHTS = {"correctness": 2, "readability": 1, "edge_case_handling": 1, "test_quality": 1}
 
 
@@ -68,7 +74,7 @@ def validate_verdict(data):
 
 
 # --------------------------------------------------------------------------
-# Heuristic judge
+# Mock judge
 # --------------------------------------------------------------------------
 
 
@@ -86,7 +92,7 @@ def _max_depth(node, depth=0):
 
 
 def code_features(source):
-    """Cheap static signals used by the judge."""
+    """Cheap static signals used by the mock judge."""
     lines = source.splitlines()
     features = {
         "parses": True,
@@ -176,10 +182,10 @@ def weighted_total(scores):
     return sum(scores[criterion] * WEIGHTS[criterion] for criterion in CRITERIA)
 
 
-class HeuristicJudge:
-    """Judge based on static heuristics. Deterministic."""
+class MockJudge:
+    """Offline judge based on static heuristics. Deterministic."""
 
-    name = "heuristic"
+    name = "mock"
 
     def judge(self, task):
         scores = {label: heuristic_scores(task.candidates[label]) for label in CANDIDATES}
@@ -205,3 +211,125 @@ class HeuristicJudge:
                 f"solution, candidate {winner}, is preferred."
             )
         return Verdict(task.task_id, scores, winner, reason, self.name)
+
+
+# --------------------------------------------------------------------------
+# LLM judge
+# --------------------------------------------------------------------------
+
+SYSTEM_PROMPT = """You are reviewing two candidate solutions to a small Python task.
+
+Score each candidate from 1 to 5 on every criterion in the rubric below, then
+pick the candidate a careful reviewer would merge. You only have the source
+code, so reason about what the code actually does on the inputs the task
+describes, including boundary and invalid input, rather than trusting
+docstrings or how tidy it looks.
+
+<rubric>
+{rubric}
+</rubric>
+
+Reply with a single JSON object and nothing else, in exactly this shape:
+
+{{"scores": {{"A": {{"correctness": 1, "readability": 1, "edge_case_handling": 1, "test_quality": 1}},
+            "B": {{"correctness": 1, "readability": 1, "edge_case_handling": 1, "test_quality": 1}}}},
+ "winner": "A",
+ "reason": "one sentence naming the deciding difference"}}
+
+Every score is an integer from 1 to 5 and "winner" is "A" or "B"."""
+
+USER_PROMPT = """<task>
+{prompt}
+</task>
+
+<candidate_a>
+{a}
+</candidate_a>
+
+<candidate_b>
+{b}
+</candidate_b>"""
+
+
+def build_messages(task, rubric):
+    """Return ``(system, messages)`` for one task."""
+    system = SYSTEM_PROMPT.format(rubric=rubric.strip())
+    user = USER_PROMPT.format(
+        prompt=task.prompt.strip(),
+        a=task.candidates["A"].rstrip(),
+        b=task.candidates["B"].rstrip(),
+    )
+    return system, [{"role": "user", "content": user}]
+
+
+def extract_json(text):
+    """Parse the JSON object in a model reply, tolerating code fences around it."""
+    start, end = text.find("{"), text.rfind("}")
+    if start == -1 or end <= start:
+        raise JudgeError("response did not contain a JSON object")
+    try:
+        return json.loads(text[start : end + 1])
+    except json.JSONDecodeError as error:
+        raise JudgeError("response was not valid JSON") from error
+
+
+class LLMJudge:
+    """Judge backed by the Anthropic Messages API."""
+
+    name = "llm"
+
+    def __init__(self, client=None, model=None, rubric=None):
+        self.model = model or os.environ.get(MODEL_ENV)
+        if not self.model:
+            raise JudgeError(f"{MODEL_ENV} is not set; it must name the model to judge with")
+        self.rubric = rubric if rubric is not None else RUBRIC_PATH.read_text()
+        if client is None:
+            api_key = os.environ.get(API_KEY_ENV)
+            if not api_key:
+                raise JudgeError(f"{API_KEY_ENV} is not set; use the mock judge instead")
+            import anthropic
+
+            client = anthropic.Anthropic(api_key=api_key)
+        self.client = client
+
+    def judge(self, task):
+        import anthropic
+
+        system, messages = build_messages(task, self.rubric)
+        try:
+            response = self.client.messages.create(
+                model=self.model,
+                max_tokens=MAX_TOKENS,
+                system=system,
+                messages=messages,
+            )
+        except anthropic.RateLimitError as error:
+            raise JudgeError(f"{task.task_id}: rate limited after retries: {error}") from error
+        except anthropic.APIStatusError as error:
+            raise JudgeError(
+                f"{task.task_id}: API returned {error.status_code}: {error.message}"
+            ) from error
+        except anthropic.APIConnectionError as error:
+            raise JudgeError(f"{task.task_id}: could not reach the API: {error}") from error
+
+        if response.stop_reason != "end_turn":
+            raise JudgeError(f"{task.task_id}: response ended with {response.stop_reason!r}")
+        text = next((block.text for block in response.content if block.type == "text"), None)
+        if text is None:
+            raise JudgeError(f"{task.task_id}: response had no text block")
+        try:
+            scores, winner, reason = validate_verdict(extract_json(text))
+        except JudgeError as error:
+            raise JudgeError(f"{task.task_id}: {error}") from error
+        return Verdict(task.task_id, scores, winner, reason, self.name)
+
+
+def get_judge(kind="auto"):
+    """Build a judge. ``auto`` uses the LLM judge when an API key is present."""
+    if kind == "auto":
+        kind = "llm" if os.environ.get(API_KEY_ENV) else "mock"
+    if kind == "mock":
+        return MockJudge()
+    if kind == "llm":
+        return LLMJudge()
+    raise ValueError(f"unknown judge: {kind!r}")
