@@ -1,7 +1,7 @@
 import json
 
 from code_review_eval.cli import main
-from code_review_eval.judge import HeuristicJudge, validate_verdict
+from code_review_eval.judge import MockJudge, validate_verdict
 from code_review_eval.pipeline import read_jsonl, run_judge, run_tests, write_jsonl
 
 from .conftest import TASKS_DIR, make_task
@@ -28,7 +28,7 @@ def test_run_tests_writes_results(tasks_dir, tmp_path):
 
 def test_run_judge_writes_preferences(tasks_dir, tmp_path):
     out = tmp_path / "preferences.jsonl"
-    rows = run_judge(tasks_dir, out, HeuristicJudge())
+    rows = run_judge(tasks_dir, out, MockJudge())
     assert read_jsonl(out) == rows
     assert set(rows[0]) >= {"task_id", "scores", "winner", "reason"}
     validate_verdict(rows[0])
@@ -45,7 +45,7 @@ def cli_args(tmp_path, tasks):
 
 def test_cli_all_end_to_end(tasks_dir, tmp_path, capsys):
     make_task(tasks_dir, name="t02_add_again")
-    code = main([*cli_args(tmp_path, tasks_dir), "all", "--backend", "local"])
+    code = main([*cli_args(tmp_path, tasks_dir), "all", "--backend", "local", "--judge", "mock"])
     assert code == 0
     assert len(read_jsonl(tmp_path / "preferences.jsonl")) == 2
     assert "**2 of 2**" in (tmp_path / "report.md").read_text()
@@ -58,13 +58,13 @@ def test_cli_analyze_without_inputs_fails(tasks_dir, tmp_path, capsys):
 
 
 def test_cli_reports_missing_tasks_dir(tmp_path, capsys):
-    code = main([*cli_args(tmp_path, tmp_path / "missing"), "judge"])
+    code = main([*cli_args(tmp_path, tmp_path / "missing"), "judge", "--judge", "mock"])
     assert code == 1
     assert "tasks directory not found" in capsys.readouterr().err
 
 
 def test_full_pipeline_on_real_tasks_local(tmp_path):
-    code = main([*cli_args(tmp_path, TASKS_DIR), "all", "--backend", "local"])
+    code = main([*cli_args(tmp_path, TASKS_DIR), "all", "--backend", "local", "--judge", "mock"])
     assert code == 0
     results = json.loads((tmp_path / "results.json").read_text())["results"]
     assert len(results) == 20

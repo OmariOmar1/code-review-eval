@@ -28,7 +28,7 @@ def preference(task_id, winner, a_correct=3, b_correct=3):
         "scores": scores,
         "winner": winner,
         "reason": f"{winner} is better.",
-        "judge": "heuristic",
+        "judge": "mock",
     }
 
 
