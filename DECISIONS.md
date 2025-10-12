@@ -44,7 +44,7 @@ Choices made while building this, with the reasoning.
   tests exercise the real runner logic without Docker. It is never chosen
   automatically; if Docker is missing the default run fails with a message.
 
-## Rubric and judge
+## Rubric and judges
 
 - **"Test quality" is scored on doctests.** The reference tests belong to the
   task, not to a candidate, so there would otherwise be nothing to score.
@@ -53,14 +53,22 @@ Choices made while building this, with the reasoning.
   would be circular.
 - **The judge must pick A or B.** No "tie" verdict, so every row is a usable
   preference. The objective side can still be a tie.
-- **The judge is static analysis, not a lookup table.** It scores from
-  docstrings, identifier length, line length, nesting, guard clauses and
+- **LLM judge uses the Anthropic Messages API** through the official SDK. The
+  prompt asks for a single JSON object; the reply is parsed (code fences are
+  tolerated) and every field is validated in Python. The key is read from
+  `ANTHROPIC_API_KEY` and the model name from `JUDGE_MODEL`. There is no
+  default model, so results always say which one was asked for.
+- **Any unusable response is an error, not a guess.** A refusal, truncated
+  output, invalid JSON or out-of-range score raises `JudgeError` and stops the
+  run rather than writing a made-up row.
+- **`--judge auto` is the default**: LLM when a key is present, mock
+  otherwise, and the judge used is stored in every row.
+- **The mock judge is honest static analysis, not a lookup table.** It scores
+  from docstrings, identifier length, line length, nesting, guard clauses and
   doctest count, with correctness weighted double. It can be wrong, and is on
-  `09_chunk`. A judge that secretly read the test results would make the
+  `09_chunk`. A mock that secretly read the test results would make the
   agreement number meaningless.
-- **Tie-break**: equal totals go to the shorter file, then to A.
-- **Verdicts are validated before they are written**: scores must be integers
-  from 1 to 5 on all four criteria and the winner must be A or B.
+- **Mock tie-break**: equal totals go to the shorter file, then to A.
 
 ## Analysis
 
@@ -75,9 +83,10 @@ Choices made while building this, with the reasoning.
 
 ## Repository
 
-- **Generated outputs from one run are committed** (`preferences.jsonl`,
+- **Generated outputs from one mock run are committed** (`preferences.jsonl`,
   `report.md`, `results/test_results.json`) so the README numbers can be
   checked without running anything. Timings in the results file will differ
   between machines.
 - **CI has two jobs**: unit tests on Python 3.10 and 3.12, and the full
-  pipeline in Docker.
+  pipeline in Docker with the mock judge. The LLM judge is not run in CI
+  because it needs a secret and costs money.
