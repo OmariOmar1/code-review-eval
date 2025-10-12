@@ -10,7 +10,7 @@
       "tests_failed": 0,
       "tests_total": 9,
       "runtime_s": 0.02,
-      "wall_time_s": 0.645,
+      "wall_time_s": 0.588,
       "exit_code": 0,
       "errors": [],
       "pass_rate": 1.0
@@ -24,7 +24,7 @@
       "tests_failed": 0,
       "tests_total": 9,
       "runtime_s": 0.78,
-      "wall_time_s": 1.404,
+      "wall_time_s": 1.378,
       "exit_code": 0,
       "errors": [],
       "pass_rate": 1.0
@@ -37,8 +37,8 @@
       "tests_passed": 6,
       "tests_failed": 2,
       "tests_total": 8,
-      "runtime_s": 0.01,
-      "wall_time_s": 0.587,
+      "runtime_s": 0.02,
+      "wall_time_s": 0.637,
       "exit_code": 1,
       "errors": [
         "test_solution.py::test_ignores_punctuation_and_spaces - AssertionError...",
@@ -55,7 +55,7 @@
       "tests_failed": 0,
       "tests_total": 8,
       "runtime_s": 0.02,
-      "wall_time_s": 0.811,
+      "wall_time_s": 0.638,
       "exit_code": 0,
       "errors": [],
       "pass_rate": 1.0
@@ -68,8 +68,8 @@
       "tests_passed": 8,
       "tests_failed": 0,
       "tests_total": 8,
-      "runtime_s": 0.01,
-      "wall_time_s": 0.575,
+      "runtime_s": 0.02,
+      "wall_time_s": 0.595,
       "exit_code": 0,
       "errors": [],
       "pass_rate": 1.0
@@ -83,7 +83,7 @@
       "tests_failed": 3,
       "tests_total": 8,
       "runtime_s": 0.02,
-      "wall_time_s": 0.576,
+      "wall_time_s": 0.607,
       "exit_code": 1,
       "errors": [
         "test_solution.py::test_unsorted_input - assert [[8, 10]] == [[1, 6], [...",
@@ -100,8 +100,8 @@
       "tests_passed": 12,
       "tests_failed": 0,
       "tests_total": 12,
-      "runtime_s": 0.03,
-      "wall_time_s": 0.6,
+      "runtime_s": 0.01,
+      "wall_time_s": 0.611,
       "exit_code": 0,
       "errors": [],
       "pass_rate": 1.0
@@ -114,8 +114,8 @@
       "tests_passed": 12,
       "tests_failed": 0,
       "tests_total": 12,
-      "runtime_s": 0.02,
-      "wall_time_s": 0.599,
+      "runtime_s": 0.01,
+      "wall_time_s": 0.618,
       "exit_code": 0,
       "errors": [],
       "pass_rate": 1.0
@@ -129,7 +129,7 @@
       "tests_failed": 4,
       "tests_total": 8,
       "runtime_s": 0.02,
-      "wall_time_s": 0.601,
+      "wall_time_s": 0.621,
       "exit_code": 1,
       "errors": [
         "test_solution.py::test_deeply_nested - assert [1, 2, [3, [4, [5]]]] ==...",
@@ -147,8 +147,8 @@
       "tests_passed": 8,
       "tests_failed": 0,
       "tests_total": 8,
-      "runtime_s": 0.02,
-      "wall_time_s": 0.6,
+      "runtime_s": 0.01,
+      "wall_time_s": 0.624,
       "exit_code": 0,
       "errors": [],
       "pass_rate": 1.0
@@ -162,7 +162,7 @@
       "tests_failed": 0,
       "tests_total": 8,
       "runtime_s": 0.01,
-      "wall_time_s": 0.59,
+      "wall_time_s": 0.606,
       "exit_code": 0,
       "errors": [],
       "pass_rate": 1.0
@@ -176,7 +176,7 @@
       "tests_failed": 2,
       "tests_total": 8,
       "runtime_s": 0.02,
-      "wall_time_s": 0.615,
+      "wall_time_s": 0.617,
       "exit_code": 1,
       "errors": [
         "test_solution.py::test_punctuation_is_stripped - AssertionError: asser...",
@@ -193,7 +193,7 @@
       "tests_failed": 3,
       "tests_total": 36,
       "runtime_s": 0.04,
-      "wall_time_s": 0.617,
+      "wall_time_s": 0.647,
       "exit_code": 1,
       "errors": [
         "test_solution.py::test_missing_above_range - IndexError: list index ou...",
@@ -210,8 +210,8 @@
       "tests_passed": 36,
       "tests_failed": 0,
       "tests_total": 36,
-      "runtime_s": 0.03,
-      "wall_time_s": 0.622,
+      "runtime_s": 0.05,
+      "wall_time_s": 0.639,
       "exit_code": 0,
       "errors": [],
       "pass_rate": 1.0
@@ -225,7 +225,7 @@
       "tests_failed": 0,
       "tests_total": 14,
       "runtime_s": 0.02,
-      "wall_time_s": 0.624,
+      "wall_time_s": 0.605,
       "exit_code": 0,
       "errors": [],
       "pass_rate": 1.0
@@ -238,8 +238,8 @@
       "tests_passed": 5,
       "tests_failed": 9,
       "tests_total": 14,
-      "runtime_s": 0.02,
-      "wall_time_s": 0.619,
+      "runtime_s": 0.03,
+      "wall_time_s": 0.635,
       "exit_code": 1,
       "errors": [
         "test_solution.py::test_invalid_input_raises[] - Failed: DID NOT RAISE ...",
@@ -263,7 +263,7 @@
       "tests_failed": 0,
       "tests_total": 8,
       "runtime_s": 0.01,
-      "wall_time_s": 0.605,
+      "wall_time_s": 0.627,
       "exit_code": 0,
       "errors": [],
       "pass_rate": 1.0
@@ -276,8 +276,8 @@
       "tests_passed": 6,
       "tests_failed": 2,
       "tests_total": 8,
-      "runtime_s": 0.01,
-      "wall_time_s": 0.6,
+      "runtime_s": 0.02,
+      "wall_time_s": 0.603,
       "exit_code": 1,
       "errors": [
         "test_solution.py::test_uneven_split_keeps_remainder - assert [[1, 2], ...",
@@ -294,7 +294,7 @@
       "tests_failed": 2,
       "tests_total": 9,
       "runtime_s": 0.02,
-      "wall_time_s": 0.629,
+      "wall_time_s": 0.631,
       "exit_code": 1,
       "errors": [
         "test_solution.py::test_get_refreshes_recency - AssertionError: assert ...",
@@ -311,7 +311,7 @@
       "tests_failed": 0,
       "tests_total": 9,
       "runtime_s": 0.02,
-      "wall_time_s": 0.64,
+      "wall_time_s": 0.637,
       "exit_code": 0,
       "errors": [],
       "pass_rate": 1.0

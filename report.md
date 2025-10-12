@@ -1,6 +1,6 @@
 # Judge vs. Tests Report
 
-- Judge: `heuristic`
+- Judge: `mock`
 - Test backend: `docker`
 - Tasks: 10
 
